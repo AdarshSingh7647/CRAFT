@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="CRAFT is a training-free cascaded retrieval framework for tabular QA with strong retrieval and end-to-end performance on NQ-Tables."/>
+<meta name="theme-color" content="#2b5cb8"/>
+<meta property="og:title" content="CRAFT: Training-Free Cascaded Retrieval for Tabular QA"/>
+<meta property="og:description" content="An academic project page for CRAFT, a training-free cascaded retrieval framework for tabular question answering."/>
+<title>CRAFT: Training-Free Cascaded Retrieval for Tabular QA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --ink: #0d1117;
+    --ink-2: #2d3748;
+    --ink-3: #4a5568;
+    --ink-4: #718096;
+    --cream: #fafaf8;
+    --white: #ffffff;
+    --rule: #e2e8f0;
+    --rule-2: #edf2f7;
+
+    --blue-deep: #1a3a6b;
+    --blue-mid: #2b5cb8;
+    --blue-light: #4a90d9;
+    --blue-pale: #dbeafe;
+    --blue-pale-2: #eff6ff;
+
+    --violet: #6d28d9;
+    --violet-light: #7c3aed;
+    --violet-pale: #ede9fe;
+
+    --teal: #0d9488;
+    --teal-pale: #ccfbf1;
+
+    --amber: #d97706;
+    --amber-pale: #fef3c7;
+
+    --rose: #e11d48;
+    --rose-pale: #ffe4e6;
+
+    --gradient-hero: linear-gradient(135deg, #f0f4ff 0%, #faf7ff 50%, #f0fbff 100%);
+    --gradient-accent: linear-gradient(135deg, var(--blue-mid) 0%, var(--violet) 100%);
+    --gradient-card: linear-gradient(145deg, #fff 0%, #f8f9ff 100%);
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.06);
+    --shadow-hover: 0 20px 60px rgba(43,92,184,.15), 0 6px 20px rgba(43,92,184,.08);
+
+    --radius: 12px;
+    --radius-lg: 20px;
+    --max-w: 1080px;
+    --font-serif: 'DM Serif Display', Georgia, serif;
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--ink);
+    background: var(--cream);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--rule-2); }
+  ::-webkit-scrollbar-thumb { background: var(--blue-light); border-radius: 3px; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.4); opacity: .7; }
+  }
+  @keyframes flow-line {
+    0%   { stroke-dashoffset: 200; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes bar-grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(250,250,248,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+    padding: .7rem 2rem;
+    min-height: 56px;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .nav-logo {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--blue-deep);
+    text-decoration: none;
+    letter-spacing: -.02em;
+  }
+  .nav-links {
+    display: flex; gap: 1rem 1.25rem; list-style: none;
+    flex-wrap: wrap; justify-content: flex-end;
+  }
+  .nav-links a {
+    text-decoration: none;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--ink-3);
+    transition: color .2s;
+    letter-spacing: .01em;
+    white-space: nowrap;
+  }
+  .nav-links a:hover { color: var(--blue-mid); }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  section {
+    padding: 5rem 0;
+    scroll-margin-top: 88px;
+  }
+
+  .section-label {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--blue-mid);
+    background: var(--blue-pale-2);
+    border: 1px solid var(--blue-pale);
+    border-radius: 100px;
+    padding: .28rem .9rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    color: var(--ink);
+    line-height: 1.2;
+    letter-spacing: -.03em;
+    margin-bottom: 1rem;
+  }
+
+  .section-sub {
+    font-size: 1.05rem;
+    color: var(--ink-3);
+    max-width: 620px;
+    line-height: 1.7;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0;
+  }
+
+  /* ── Hero ── */
+  #hero {
+    min-height: 100vh;
+    padding-top: 100px;
+    background: var(--gradient-hero);
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center;
+  }
+
+  #hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(43,92,184,.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  #hero::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; left: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(109,40,217,.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative; z-index: 2;
+    animation: fadeUp .9s ease both;
+  }
+
+  .hero-venue {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-size: .78rem; font-weight: 500;
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-4);
+    margin-bottom: 1.25rem;
+  }
+  .hero-venue span {
+    width: 20px; height: 1px; background: var(--ink-4); display: inline-block;
+  }
+
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    line-height: 1.12;
+    letter-spacing: -.04em;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+  .hero-title .craft-word {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-tagline {
+    font-size: 1.15rem;
+    color: var(--ink-3);
+    max-width: 580px;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  .authors-block {
+    margin-bottom: 2rem;
+  }
+  .authors-list {
+    display: flex; flex-wrap: wrap; gap: .5rem 1.2rem;
+    margin-bottom: .6rem;
+  }
+  .author {
+    font-size: .92rem; font-weight: 500; color: var(--ink-2);
+  }
+  .author sup {
+    font-size: .62rem; color: var(--blue-mid); font-weight: 600;
+  }
+  .author-note {
+    font-size: .78rem; color: var(--ink-4); font-style: italic;
+  }
+  .affiliations {
+    display: flex; flex-wrap: wrap; gap: .4rem .9rem;
+    margin-top: .5rem;
+  }
+  .affil {
+    font-size: .78rem; color: var(--ink-4); display: flex; align-items: center; gap: .3rem;
+  }
+  .affil-num {
+    font-weight: 700; color: var(--blue-mid); font-size: .68rem;
+  }
+
+  .tags {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    margin-bottom: 2rem;
+  }
+  .tag {
+    font-size: .75rem; font-weight: 500;
+    padding: .3rem .75rem;
+    border-radius: 100px;
+    letter-spacing: .02em;
+  }
+  .tag-blue   { background: var(--blue-pale);   color: var(--blue-mid);  border: 1px solid #bfdbfe; }
+  .tag-violet { background: var(--violet-pale);  color: var(--violet);    border: 1px solid #ddd6fe; }
+  .tag-teal   { background: var(--teal-pale);    color: var(--teal);      border: 1px solid #99f6e4; }
+  .tag-amber  { background: var(--amber-pale);   color: var(--amber);     border: 1px solid #fcd34d; }
+
+  .cta-row {
+    display: flex; flex-wrap: wrap; gap: .75rem;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .65rem 1.4rem;
+    border-radius: var(--radius);
+    font-size: .88rem; font-weight: 600;
+    text-decoration: none;
+    transition: all .2s ease;
+    cursor: pointer; border: none;
+    letter-spacing: .01em;
+  }
+  .btn-primary {
+    background: var(--gradient-accent);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(43,92,184,.3);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(43,92,184,.4);
+  }
+  .btn-outline {
+    background: var(--white);
+    color: var(--ink-2);
+    border: 1.5px solid var(--rule);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-outline:hover {
+    border-color: var(--blue-mid);
+    color: var(--blue-mid);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── Abstract ── */
+  #abstract {
+    background: var(--white);
+  }
+  .abstract-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+  @media (max-width: 768px) {
+    .abstract-grid { grid-template-columns: 1fr; }
+  }
+  .abstract-text {
+    font-size: 1rem;
+    color: var(--ink-3);
+    line-height: 1.8;
+  }
+  .abstract-text p + p { margin-top: 1rem; }
+  .abstract-highlight {
+    font-weight: 500; color: var(--ink-2);
+  }
+
+  .abstract-stats {
+    display: grid; gap: 1rem;
+  }
+  .stat-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .25s, transform .25s;
+  }
+  .stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .stat-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .stat-body { flex: 1; }
+  .stat-val {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: .2rem;
+  }
+  .stat-label { font-size: .8rem; color: var(--ink-4); font-weight: 500; }
+
+  /* ── Contributions ── */
+  #contributions {
+    background: var(--cream);
+  }
+  .contrib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .contrib-card {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .3s, transform .3s, border-color .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .contrib-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--gradient-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+  }
+  .contrib-card:hover::before { transform: scaleX(1); }
+  .contrib-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-4px);
+    border-color: var(--blue-pale);
+  }
+  .contrib-icon {
+    font-size: 1.75rem;
+    margin-bottom: .9rem;
+    display: block;
+  }
+  .contrib-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: .5rem;
+    line-height: 1.3;
+  }
+  .contrib-desc {
+    font-size: .85rem;
+    color: var(--ink-4);
+    line-height: 1.6;
+  }
+
+  /* ── Method ── */
+  #method {
+    background: var(--white);
+  }
+  .pipeline-wrapper {
+    margin-top: 2.5rem;
+    background: linear-gradient(160deg, #f0f4ff 0%, #f8f5ff 100%);
+    border: 1px solid #dbe4ff;
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    overflow: hidden;
+  }
+  .pipeline-title {
+    text-align: center;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--blue-mid);
+    margin-bottom: 2rem;
+  }
+  .pipeline-stages {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+  }
+  .pipeline-stage {
+    flex: 1;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--rule);
+    position: relative;
+    transition: box-shadow .3s, transform .3s;
+    min-width: 0;
+  }
+  .pipeline-stage:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    z-index: 2;
+  }
+  .pipeline-arrow {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 .4rem;
+    color: var(--blue-light);
+    flex-shrink: 0;
+    font-size: 1.2rem;
+  }
+  .stage-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .2rem .55rem;
+    border-radius: 100px;
+    margin-bottom: .6rem;
+    display: inline-block;
+  }
+  .badge-prep   { background: var(--amber-pale);  color: var(--amber);  }
+  .badge-s1     { background: var(--blue-pale);   color: var(--blue-mid);  }
+  .badge-s2     { background: var(--violet-pale);  color: var(--violet);  }
+  .badge-s3     { background: var(--teal-pale);    color: var(--teal);  }
+  .badge-gen    { background: var(--rose-pale);    color: var(--rose);  }
+
+  .stage-model {
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    color: var(--ink-4);
+    background: var(--rule-2);
+    border-radius: 4px;
+    padding: .15rem .4rem;
+    margin-bottom: .5rem;
+    display: inline-block;
+  }
+  .stage-name {
+    font-weight: 600;
+    font-size: .82rem;
+    color: var(--ink-2);
+    margin-bottom: .3rem;
+    line-height: 1.3;
+  }
+  .stage-count {
+    font-size: .75rem;
+    color: var(--ink-4);
+    display: flex; align-items: center; gap: .3rem;
+    margin-top: .5rem;
+  }
+  .stage-count .pill {
+    background: var(--gradient-accent);
+    color: #fff;
+    font-size: .64rem;
+    font-weight: 700;
+    padding: .12rem .5rem;
+    border-radius: 100px;
+  }
+
+  .funnel-bar {
+    display: flex; align-items: center; gap: .75rem;
+    margin-top: 1.5rem;
+  }
+  .funnel-label { font-size: .78rem; color: var(--ink-4); min-width: 55px; text-align: right; }
+  .funnel-track {
+    flex: 1; height: 8px;
+    background: var(--rule-2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .funnel-fill {
+    height: 100%;
+    border-radius: 100px;
+    transform-origin: left;
+    animation: bar-grow .8s ease both;
+  }
+  .funnel-val { font-size: .78rem; font-weight: 600; color: var(--ink-2); min-width: 50px; }
+
+  @media (max-width: 820px) {
+    .pipeline-stages {
+      flex-direction: column;
+    }
+    .pipeline-arrow { transform: rotate(90deg); padding: .3rem 0; }
+  }
+
+  /* ── Results ── */
+  #results {
+    background: var(--cream);
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+  @media (max-width: 768px) {
+    .results-grid { grid-template-columns: 1fr; }
+  }
+
+  .results-table-wrap {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .results-table-head {
+    background: var(--gradient-accent);
+    color: #fff;
+    padding: .9rem 1.25rem;
+    font-weight: 600;
+    font-size: .88rem;
+    letter-spacing: .02em;
+  }
+  table.perf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .83rem;
+  }
+  table.perf-table th {
+    background: var(--blue-pale-2);
+    color: var(--blue-deep);
+    font-weight: 600;
+    padding: .6rem .9rem;
+    text-align: left;
+    font-size: .75rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  table.perf-table td {
+    padding: .55rem .9rem;
+    border-top: 1px solid var(--rule-2);
+    color: var(--ink-3);
+  }
+  table.perf-table tr.craft-row td {
+    background: linear-gradient(90deg, #eff6ff 0%, #f8f5ff 100%);
+    color: var(--blue-deep);
+    font-weight: 700;
+  }
+  table.perf-table tr:hover td {
+    background: var(--rule-2);
+  }
+  table.perf-table tr.craft-row:hover td {
+    background: linear-gradient(90deg, #dbeafe 0%, #ede9fe 100%);
+  }
+  .best-mark {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+  }
+
+  .bar-chart-wrap {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .chart-title {
+    font-weight: 600; font-size: .85rem; color: var(--ink-2);
+    margin-bottom: 1.25rem;
+  }
+  .bar-group { margin-bottom: 1rem; }
+  .bar-label-row {
+    display: flex; justify-content: space-between;
+    font-size: .78rem; color: var(--ink-4); margin-bottom: .3rem;
+  }
+  .bar-val { font-weight: 600; color: var(--ink-2); }
+  .bar-track {
+    height: 10px;
+    background: var(--rule-2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform .8s cubic-bezier(.34,1.56,.64,1);
+  }
+  .bar-fill.animated { transform: scaleX(1); }
+  .legend-row {
+    display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: .35rem;
+    font-size: .75rem; color: var(--ink-4);
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  /* ── End-to-end ── */
+  #e2e {
+    background: var(--white);
+  }
+  .e2e-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2rem; margin-top: 2.5rem;
+  }
+  @media (max-width: 768px) { .e2e-grid { grid-template-columns: 1fr; } }
+
+  .e2e-card {
+    background: var(--gradient-card);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .3s, transform .3s;
+  }
+  .e2e-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+  }
+  .e2e-card-title {
+    font-weight: 700; font-size: .92rem; color: var(--ink);
+    margin-bottom: .4rem; display: flex; align-items: center; gap: .5rem;
+  }
+  .e2e-card-desc {
+    font-size: .82rem; color: var(--ink-4); margin-bottom: 1.1rem;
+  }
+  .model-bar-group { margin-bottom: .8rem; }
+  .model-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: .8rem; color: var(--ink-3); margin-bottom: .25rem;
+  }
+
+  .highlight-callout {
+    background: linear-gradient(135deg, var(--blue-pale-2) 0%, var(--violet-pale) 100%);
+    border: 1px solid #c7d2fe;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-top: 2rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .callout-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .callout-text { font-size: .9rem; color: var(--ink-2); line-height: 1.6; }
+  .callout-text strong { color: var(--blue-deep); }
+
+  /* ── Why CRAFT Matters ── */
+  #why {
+    background: var(--cream);
+  }
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .why-card {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .3s, transform .3s;
+    text-align: center;
+  }
+  .why-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-4px);
+  }
+  .why-icon-wrap {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto 1rem;
+  }
+  .why-card-title {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--ink);
+    margin-bottom: .4rem;
+  }
+  .why-card-desc {
+    font-size: .82rem;
+    color: var(--ink-4);
+    line-height: 1.6;
+  }
+
+  /* ── Limitations ── */
+  #limitations {
+    background: var(--cream);
+  }
+  .lim-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.5rem; margin-top: 2rem;
+  }
+  @media (max-width: 640px) { .lim-grid { grid-template-columns: 1fr; } }
+  .lim-card {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    border-left: 4px solid;
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .lim-card.latency { border-left-color: var(--amber); }
+  .lim-card.scope   { border-left-color: var(--violet); }
+  .lim-title { font-weight: 700; font-size: .9rem; color: var(--ink); margin-bottom: .4rem; }
+  .lim-desc  { font-size: .84rem; color: var(--ink-4); line-height: 1.6; }
+
+  /* ── Citation ── */
+  #citation {
+    background: var(--white);
+  }
+  .bibtex-wrap {
+    background: var(--ink);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-top: 1.5rem;
+  }
+  .bibtex-bar {
+    background: rgba(255,255,255,.05);
+    padding: .65rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .bibtex-filename {
+    font-family: var(--font-mono);
+    font-size: .8rem;
+    color: rgba(255,255,255,.5);
+  }
+  .copy-btn {
+    display: flex; align-items: center; gap: .4rem;
+    background: rgba(43,92,184,.3);
+    color: #93c5fd;
+    border: 1px solid rgba(147,197,253,.2);
+    border-radius: 6px;
+    padding: .3rem .75rem;
+    font-family: var(--font-sans);
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .copy-btn:hover { background: rgba(43,92,184,.5); }
+  .copy-btn.copied { background: rgba(13,148,136,.3); color: #5eead4; border-color: rgba(94,234,212,.2); }
+  pre.bibtex {
+    padding: 1.5rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: .82rem;
+    line-height: 1.8;
+    color: #e2e8f0;
+    overflow-x: auto;
+  }
+  .bib-key    { color: #93c5fd; }
+  .bib-field  { color: #6ee7b7; }
+  .bib-val    { color: #fde68a; }
+  .bib-punc   { color: #94a3b8; }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,.6);
+    padding: 3rem 0 2rem;
+  }
+  .footer-inner {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  .footer-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;
+  }
+  .footer-brand {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    color: var(--white);
+    margin-bottom: .4rem;
+  }
+  .footer-sub { font-size: .82rem; max-width: 320px; line-height: 1.6; }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-link {
+    display: flex; align-items: center; gap: .4rem;
+    color: rgba(255,255,255,.6);
+    text-decoration: none;
+    font-size: .86rem;
+    transition: color .2s;
+  }
+  .footer-link:hover { color: #93c5fd; }
+  .footer-divider {
+    border: none; border-top: 1px solid rgba(255,255,255,.08);
+    margin: 1.5rem 0 1rem;
+  }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: .5rem;
+  }
+  .footer-copy { font-size: .78rem; }
+  .footer-ack  { font-size: .78rem; }
+
+  /* ── Misc ── */
+  .text-center { text-align: center; }
+  .mt-1 { margin-top: .5rem; }
+  .mt-2 { margin-top: 1rem; }
+  .mt-3 { margin-top: 1.5rem; }
+
+  details.collapsible {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    margin-top: 1.5rem;
+    overflow: hidden;
+  }
+  summary.collapsible-head {
+    background: var(--blue-pale-2);
+    padding: .9rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .88rem;
+    color: var(--blue-deep);
+    display: flex; align-items: center; gap: .5rem;
+    list-style: none;
+    user-select: none;
+  }
+  summary.collapsible-head::after {
+    content: '›';
+    margin-left: auto;
+    font-size: 1.2rem;
+    transition: transform .2s;
+  }
+  details[open] summary.collapsible-head::after { transform: rotate(90deg); }
+  .collapsible-body {
+    padding: 1.25rem;
+    font-size: .86rem;
+    color: var(--ink-3);
+    line-height: 1.7;
+    background: var(--white);
+  }
+
+  /* Stage icons in pipeline */
+  .stage-icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    margin-bottom: .6rem;
+  }
+
+
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav>
+  <a href="#hero" class="nav-logo">CRAFT</a>
+  <ul class="nav-links">
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#highlights">Highlights</a></li>
+    <li><a href="#contributions">Contributions</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#e2e">End-to-End</a></li>
+    <li><a href="#why">Why CRAFT</a></li>
+    <li><a href="#limitations">Limitations</a></li>
+    <li><a href="#citation">Cite</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ── -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-venue">
+        <span></span>
+        arXiv 2025 &nbsp;·&nbsp; NLP / Table QA
+        <span></span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="craft-word">CRAFT</span>: Training-Free<br/>
+        Cascaded Retrieval<br/>
+        for Tabular QA
+      </h1>
+
+      <p class="hero-tagline">
+        A modular, training-free cascaded retrieval framework for scalable tabular question answering — no fine-tuning required.
+      </p>
+
+      <div class="authors-block">
+        <div class="authors-list">
+          <span class="author">*Adarsh Singh<sup>1</sup></span>
+          <span class="author">*Kushal Raj Bhandari<sup>2</sup></span>
+          <span class="author">Jianxi Gao<sup>2</sup></span>
+          <span class="author">†Soham Dan<sup>3</sup></span>
+          <span class="author">†Vivek Gupta<sup>1</sup></span>
+        </div>
+        <div class="affiliations">
+          <span class="affil"><span class="affil-num">1</span> Arizona State University</span>
+          <span class="affil"><span class="affil-num">2</span> Rensselaer Polytechnic Institute</span>
+          <span class="affil"><span class="affil-num">3</span> Microsoft</span>
+        </div>
+        <p class="author-note" style="margin-top:.4rem">* Equal contribution &nbsp;·&nbsp; † Joint supervision</p>
+      </div>
+
+      <div class="tags">
+        <span class="tag tag-blue">Table QA</span>
+        <span class="tag tag-violet">Retrieval</span>
+        <span class="tag tag-teal">LLMs</span>
+        <span class="tag tag-amber">Training-Free</span>
+      </div>
+
+      <div class="cta-row">
+        <a href="https://arxiv.org/abs/2505.14984" target="_blank" class="btn btn-primary">Paper</a>
+        <a href="#method" class="btn btn-outline">Method</a>
+        <a href="#results" class="btn btn-outline">Results</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Abstract ── -->
+<section id="abstract">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Abstract</span>
+      <h2 class="section-title">The Problem &amp; The Solution</h2>
+    </div>
+
+    <div class="abstract-grid reveal">
+      <div>
+        <p class="abstract-text">
+          Table Question Answering (TQA) requires identifying the right table from a massive corpus
+          before reasoning over its structure to derive answers. Existing methods like
+          <span class="abstract-highlight">DTR</span> and <span class="abstract-highlight">ColBERT</span>
+          are computationally expensive and need dataset-specific fine-tuning — limiting adaptability
+          to new domains.
+        </p>
+        <p class="abstract-text">
+          We propose <span class="abstract-highlight">CRAFT</span>, a cascaded retrieval framework
+          that chains off-the-shelf models in three progressive stages: sparse lexical retrieval
+          (SPLADE) → dense semantic reranking (Sentence Transformer) → neural reranking
+          (text-embedding-3). Table representations are enriched with LLM-generated
+          titles and descriptions via Gemini 1.5 Flash.
+        </p>
+        <p class="abstract-text">
+          CRAFT <span class="abstract-highlight">matches or outperforms SOTA fine-tuned retrievers</span>
+          on the NQ-Tables benchmark — without training a single parameter on the target dataset.
+          End-to-end QA results with Mistral, LLaMA3, and Qwen demonstrate its effectiveness across
+          diverse LLM backends.
+        </p>
+
+        <details class="collapsible">
+          <summary class="collapsible-head">📌 Full Abstract Details</summary>
+          <div class="collapsible-body">
+            CRAFT processes 169,898 tables through three retrieval stages, ultimately producing a
+            compact top-k set for answer generation. Query expansion via sub-question decomposition
+            maximizes semantic alignment. The Sentence Transformer operates on mini-tables
+            (top 5 rows per table) to reduce context noise and token count.
+            End-to-end evaluation uses 919 unique queries from the NQ-Tables benchmark,
+            with F1 score as the primary metric.
+          </div>
+        </details>
+      </div>
+
+      <div class="abstract-stats">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#eff6ff">📊</div>
+          <div class="stat-body">
+            <div class="stat-val">169,898</div>
+            <div class="stat-label">Tables in NQ-Tables corpus</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#ede9fe">🎯</div>
+          <div class="stat-body">
+            <div class="stat-val">87.16</div>
+            <div class="stat-label">Recall@10 - strongest retrieval among shown methods</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#ccfbf1">⚡</div>
+          <div class="stat-body">
+            <div class="stat-val">96.84</div>
+            <div class="stat-label">Recall@50 - strongest deep recall</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef3c7">🔧</div>
+          <div class="stat-body">
+            <div class="stat-val">Zero</div>
+            <div class="stat-label">Domain-specific training required</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="divider"/>
+
+<!-- ── Highlights ── -->
+<section id="highlights">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Highlights</span>
+      <h2 class="section-title">What Makes CRAFT Stand Out</h2>
+      <p class="section-sub">A concise snapshot of the paper's main takeaways, performance gains, and practical advantages.</p>
+    </div>
+
+    <div class="contrib-grid reveal">
+      <div class="contrib-card">
+        <span class="contrib-icon">🪜</span>
+        <div class="contrib-title">Three-Stage Retrieval Cascade</div>
+        <p class="contrib-desc">Sparse filtering, dense semantic reranking, and neural reranking work together to progressively narrow candidates without dataset-specific training.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">🏆</span>
+        <div class="contrib-title">Strong Retrieval Quality</div>
+        <p class="contrib-desc">The paper reports 41.13 Recall@1, 87.16 Recall@10, and 96.84 Recall@50 on NQ-Tables, exceeding fine-tuned baselines at deeper cutoffs.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">🛡️</span>
+        <div class="contrib-title">Robust to Query Changes</div>
+        <p class="contrib-desc">CRAFT remains stable under paraphrased questions, with an average recall change of only -0.04 compared with much larger drops for fine-tuned DTR models.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">⚡</span>
+        <div class="contrib-title">Efficient End-to-End QA</div>
+        <p class="contrib-desc">Using compact sub-table context reduces token usage by more than 70% while still improving answer generation with pretrained LLMs such as Mistral, LLaMA3, and Qwen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Contributions ── -->
+<section id="contributions">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Contributions</span>
+      <h2 class="section-title">What We Contribute</h2>
+      <p class="section-sub">Five distinct advances that make CRAFT practical and competitive.</p>
+    </div>
+
+    <div class="contrib-grid reveal">
+      <div class="contrib-card">
+        <span class="contrib-icon">🚫🔧</span>
+        <div class="contrib-title">Training-Free Pipeline</div>
+        <p class="contrib-desc">No fine-tuning on NQ-Tables or any target dataset. Purely off-the-shelf pretrained models chained together.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">🪜</span>
+        <div class="contrib-title">Multi-Stage Cascade</div>
+        <p class="contrib-desc">Three progressive retrieval stages — sparse → dense → neural — each refining candidates from the previous stage.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">🏆</span>
+        <div class="contrib-title">Strong Retrieval Performance</div>
+        <p class="contrib-desc">Outperforms THYME, DTR, BIBERT+SPLADE, and all other baselines at R@10 and R@50 without any training.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">🛡️</span>
+        <div class="contrib-title">Robust to Paraphrasing</div>
+        <p class="contrib-desc">Under query perturbation, CRAFT loses only ~0.04 avg. recall points, while fine-tuned DTR drops 8–12 points.</p>
+      </div>
+      <div class="contrib-card">
+        <span class="contrib-icon">📈</span>
+        <div class="contrib-title">Efficient &amp; Scalable</div>
+        <p class="contrib-desc">Mini-table context reduces token count by 70%+, enabling cost-effective inference at scale across large corpora.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Method ── -->
+<section id="method">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Framework</span>
+      <h2 class="section-title">The CRAFT Pipeline</h2>
+      <p class="section-sub">
+        Progressive filtering from 169k tables down to a precise top-k for answer generation —
+        each stage more expressive than the last.
+      </p>
+    </div>
+
+    <div class="pipeline-wrapper reveal">
+      <div class="pipeline-title">CRAFT Architecture Overview</div>
+
+      <div class="pipeline-stages">
+        <!-- Preprocessing -->
+        <div class="pipeline-stage">
+          <div class="stage-icon-wrap" style="background:#fef3c7">🔍</div>
+          <span class="stage-badge badge-prep">Preprocessing</span>
+          <div class="stage-name">Query &amp; Table<br/>Enrichment</div>
+          <div class="stage-model">Gemini 1.5 Flash</div>
+          <ul style="font-size:.78rem;color:var(--ink-4);margin-top:.4rem;padding-left:1rem;line-height:1.7">
+            <li>Sub-question decomposition</li>
+            <li>Table title generation</li>
+            <li>Table descriptions</li>
+            <li>Row ranking (Sentence Transformer)</li>
+          </ul>
+          <div class="stage-count"><span class="pill">169,898</span> tables</div>
+        </div>
+
+        <div class="pipeline-arrow">→</div>
+
+        <!-- Stage 1 -->
+        <div class="pipeline-stage">
+          <div class="stage-icon-wrap" style="background:#dbeafe">🔡</div>
+          <span class="stage-badge badge-s1">Stage 1</span>
+          <div class="stage-name">Sparse Lexical<br/>Retrieval</div>
+          <div class="stage-model">SPLADE</div>
+          <ul style="font-size:.78rem;color:var(--ink-4);margin-top:.4rem;padding-left:1rem;line-height:1.7">
+            <li>Sparse expansion model</li>
+            <li>Title + desc + headers + cells</li>
+            <li>Query + sub-query input</li>
+            <li>R@5000 = 99.59%</li>
+          </ul>
+          <div class="stage-count"><span class="pill">5,000</span> candidates</div>
+        </div>
+
+        <div class="pipeline-arrow">→</div>
+
+        <!-- Stage 2 -->
+        <div class="pipeline-stage">
+          <div class="stage-icon-wrap" style="background:#ede9fe">🧠</div>
+          <span class="stage-badge badge-s2">Stage 2</span>
+          <div class="stage-name">Dense Semantic<br/>Reranking</div>
+          <div class="stage-model">all-mpnet-base-v2</div>
+          <ul style="font-size:.78rem;color:var(--ink-4);margin-top:.4rem;padding-left:1rem;line-height:1.7">
+            <li>Mini-table representation</li>
+            <li>Top 5 rows per table</li>
+            <li>Dense embeddings</li>
+            <li>R@1000 = 98.91%</li>
+          </ul>
+          <div class="stage-count"><span class="pill">1,000</span> candidates</div>
+        </div>
+
+        <div class="pipeline-arrow">→</div>
+
+        <!-- Stage 3 -->
+        <div class="pipeline-stage">
+          <div class="stage-icon-wrap" style="background:#ccfbf1">⚡</div>
+          <span class="stage-badge badge-s3">Stage 3</span>
+          <div class="stage-name">Neural<br/>Reranking</div>
+          <div class="stage-model">text-embedding-3-small</div>
+          <ul style="font-size:.78rem;color:var(--ink-4);margin-top:.4rem;padding-left:1rem;line-height:1.7">
+            <li>Deep semantic reranking</li>
+            <li>Top 100 mini-tables</li>
+            <li>R@1 = 41.13%</li>
+            <li>R@10 = 87.16%</li>
+          </ul>
+          <div class="stage-count"><span class="pill">top-k</span> tables</div>
+        </div>
+
+        <div class="pipeline-arrow">→</div>
+
+        <!-- Generation -->
+        <div class="pipeline-stage">
+          <div class="stage-icon-wrap" style="background:#ffe4e6">💬</div>
+          <span class="stage-badge badge-gen">Generation</span>
+          <div class="stage-name">Answer<br/>Generation</div>
+          <div class="stage-model">Mistral / LLaMA3 / Qwen</div>
+          <ul style="font-size:.78rem;color:var(--ink-4);margin-top:.4rem;padding-left:1rem;line-height:1.7">
+            <li>Title + headers + top-5 rows</li>
+            <li>n = 1, 3, 5 tables</li>
+            <li>Zero-shot &amp; few-shot</li>
+            <li>F1 metric evaluation</li>
+          </ul>
+          <div class="stage-count"><span class="pill">Answer</span> generated</div>
+        </div>
+      </div>
+
+      <!-- Funnel chart -->
+      <div style="margin-top:2rem;padding:0 .5rem">
+        <div style="font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);margin-bottom:.75rem;">Progressive Filtering</div>
+        <div class="funnel-bar">
+          <div class="funnel-label">Input</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:100%;background:var(--gradient-accent)"></div></div>
+          <div class="funnel-val">169,898 tables</div>
+        </div>
+        <div class="funnel-bar">
+          <div class="funnel-label">Stage 1</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:2.95%;background:#4a90d9"></div></div>
+          <div class="funnel-val">5,000 tables</div>
+        </div>
+        <div class="funnel-bar">
+          <div class="funnel-label">Stage 2</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:.59%;background:#7c3aed"></div></div>
+          <div class="funnel-val">1,000 tables</div>
+        </div>
+        <div class="funnel-bar">
+          <div class="funnel-label">Stage 3</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:.059%;background:#0d9488"></div></div>
+          <div class="funnel-val">top-k tables</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Results ── -->
+<section id="results">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Results</span>
+      <h2 class="section-title">Retrieval Performance</h2>
+      <p class="section-sub">CRAFT outperforms all fine-tuned retrievers at R@10 and R@50 on the NQ-Tables benchmark.</p>
+    </div>
+
+    <div class="results-grid reveal">
+      <div class="results-table-wrap">
+        <div class="results-table-head">📊 NQ-Tables Retrieval Metrics</div>
+        <table class="perf-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>R@1</th>
+              <th>R@10</th>
+              <th>R@50</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="4" style="background:#f8fafc;font-size:.72rem;font-weight:700;color:var(--ink-4);padding:.35rem .9rem;letter-spacing:.05em">SPARSE</td></tr>
+            <tr><td>BM25</td><td>18.49</td><td>36.94</td><td>52.61</td></tr>
+            <tr><td>SPLADE</td><td>39.84</td><td>83.33</td><td>94.65</td></tr>
+
+            <tr><td colspan="4" style="background:#f8fafc;font-size:.72rem;font-weight:700;color:var(--ink-4);padding:.35rem .9rem;letter-spacing:.05em">DENSE</td></tr>
+            <tr><td>DPR</td><td>45.32</td><td>85.84</td><td>95.44</td></tr>
+            <tr><td>TAPAS</td><td>43.79</td><td>83.49</td><td>95.10</td></tr>
+            <tr><td>DTR</td><td>32.62</td><td>75.86</td><td>89.77</td></tr>
+            <tr><td>T-RAG*</td><td>46.07</td><td>85.40</td><td>95.03</td></tr>
+
+            <tr><td colspan="4" style="background:#f8fafc;font-size:.72rem;font-weight:700;color:var(--ink-4);padding:.35rem .9rem;letter-spacing:.05em">HYBRID</td></tr>
+            <tr><td>DHR</td><td>43.67</td><td>84.65</td><td>95.62</td></tr>
+            <tr><td>BIBERT+SPLADE</td><td>45.62</td><td>86.72</td><td>95.62</td></tr>
+            <tr><td>THYME</td><td><span class="best-mark">48.55</span></td><td>86.38</td><td>96.08</td></tr>
+
+            <tr><td colspan="4" style="background:#f8fafc;font-size:.72rem;font-weight:700;color:var(--ink-4);padding:.35rem .9rem;letter-spacing:.05em">CRAFT (Ours — Training-Free)</td></tr>
+            <tr class="craft-row">
+              <td>🏆 CRAFT</td>
+              <td>41.13</td>
+              <td><span class="best-mark">87.16</span></td>
+              <td><span class="best-mark">96.84</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:.7rem 1rem;font-size:.72rem;color:var(--ink-4);border-top:1px solid var(--rule-2)">
+          * All models except CRAFT are trained on NQ-Tables.
+        </div>
+      </div>
+
+      <div>
+        <div class="bar-chart-wrap">
+          <div class="chart-title">Recall@10 — Model Comparison</div>
+          <div id="bar-chart">
+            <div class="bar-group">
+              <div class="bar-label-row"><span>BM25</span><span class="bar-val">36.94</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:42.4%;background:#cbd5e0"></div></div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label-row"><span>SPLADE</span><span class="bar-val">83.33</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:95.6%;background:#93c5fd"></div></div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label-row"><span>DPR</span><span class="bar-val">85.84</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:98.4%;background:#818cf8"></div></div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label-row"><span>THYME ✦</span><span class="bar-val">86.38</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:99.1%;background:#a78bfa"></div></div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label-row"><span style="font-weight:700;color:var(--blue-deep)">CRAFT 🏆</span><span class="bar-val" style="color:var(--blue-deep);font-weight:800">87.16</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--blue-mid),var(--violet))"></div></div>
+            </div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-item"><div class="legend-dot" style="background:#cbd5e0"></div> Sparse</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#818cf8"></div> Dense</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Hybrid ✦ trained</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--blue-mid)"></div> CRAFT (no training)</div>
+          </div>
+        </div>
+
+        <div class="bar-chart-wrap mt-2">
+          <div class="chart-title">Stage-wise Recall Progress</div>
+          <div class="bar-group">
+            <div class="bar-label-row"><span>Stage 1 (R@10)</span><span class="bar-val">72.90</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:83.7%;background:#fbbf24"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label-row"><span>+ Stage 2 (R@10)</span><span class="bar-val">82.91</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:95.1%;background:#34d399"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label-row"><span>+ Stage 3 (R@10)</span><span class="bar-val">87.16</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--blue-mid),var(--violet))"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── End-to-End ── -->
+<section id="e2e">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">End-to-End QA</span>
+      <h2 class="section-title">F1 Performance Across LLMs</h2>
+      <p class="section-sub">CRAFT paired with off-the-shelf LLMs consistently surpasses all fine-tuned baselines.</p>
+    </div>
+
+    <div class="e2e-grid reveal">
+      <div class="e2e-card">
+        <div class="e2e-card-title">📊 F1 at n=3 Retrieved Tables</div>
+        <div class="e2e-card-desc">Comparison against THYME and other baselines (zero-shot)</div>
+
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span>BIBERT</span><span>33.16</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:68.5%;background:#cbd5e0"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span>SPLADE</span><span>37.17</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:76.7%;background:#93c5fd"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span>THYME</span><span>39.16</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:80.8%;background:#a78bfa"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span style="font-weight:700;color:var(--blue-deep)">CRAFT (LLaMA3)</span><span style="font-weight:800;color:var(--blue-deep)">44.06</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:90.9%;background:linear-gradient(90deg,var(--blue-mid),var(--violet))"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span style="font-weight:700;color:var(--blue-deep)">CRAFT (Mistral)</span><span style="font-weight:800;color:var(--blue-deep)">46.04</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:95%;background:linear-gradient(90deg,var(--blue-mid),var(--violet))"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span style="font-weight:700;color:var(--blue-deep)">CRAFT + 5-shot (Mistral)</span><span style="font-weight:800;color:var(--blue-deep)">48.50</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--gradient-accent)"></div></div>
+        </div>
+      </div>
+
+      <div class="e2e-card">
+        <div class="e2e-card-title">🔬 Larger LLMs (F1, n=5)</div>
+        <div class="e2e-card-desc">CRAFT with instruction-tuned larger models vs. dataset-specific baselines</div>
+
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span>RAG (Lewis et al.)</span><span>39.67</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:69.4%;background:#cbd5e0"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span>DPR-RAGE</span><span>49.68</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:86.9%;background:#93c5fd"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span>LI-RAGE</span><span>54.17</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:94.8%;background:#a78bfa"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span style="font-weight:700;color:var(--blue-deep)">CRAFT + Llama-3.1-70B</span><span style="font-weight:800;color:var(--blue-deep)">56.94</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:99.6%;background:linear-gradient(90deg,var(--blue-mid),var(--violet))"></div></div>
+        </div>
+        <div class="model-bar-group">
+          <div class="model-bar-label"><span style="font-weight:700;color:var(--blue-deep)">CRAFT + Mistral-Small</span><span style="font-weight:800;color:var(--blue-deep)">57.14</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--gradient-accent)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-callout reveal">
+      <span class="callout-icon">💡</span>
+      <div class="callout-text">
+        <strong>Key takeaway:</strong> CRAFT with Mistral-Small-Instruct (n=5) achieves F1 of <strong>57.14</strong>,
+        clearly surpassing LI-RAGE (54.17) — the previous best — which requires dataset-specific training and
+        deeper retrieval. Few-shot prompting adds a modest but consistent boost, especially when more retrieved tables are included.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Why CRAFT ── -->
+<section id="why">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Impact</span>
+      <h2 class="section-title">Why CRAFT Matters</h2>
+      <p class="section-sub">Practical advantages that make CRAFT deployable in real-world scenarios.</p>
+    </div>
+
+    <div class="why-grid reveal">
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#eff6ff">🚫</div>
+        <div class="why-card-title">No Fine-Tuning</div>
+        <p class="why-card-desc">Zero dataset-specific training. Deploy immediately on new domains without labeled examples.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#ede9fe">🔌</div>
+        <div class="why-card-title">Off-the-Shelf Models</div>
+        <p class="why-card-desc">Uses publicly available SPLADE, Sentence Transformers, and OpenAI embeddings. No proprietary stack needed.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#ccfbf1">📈</div>
+        <div class="why-card-title">Scales to 170k+ Tables</div>
+        <p class="why-card-desc">Efficient cascaded filtering handles massive corpora without quadratic cost. Mini-tables cut token use by 70%.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon-wrap" style="background:#fef3c7">🛡️</div>
+        <div class="why-card-title">Query Robust</div>
+        <p class="why-card-desc">Only −0.04 avg recall drop under paraphrasing. Fine-tuned competitors fall 8–12 points on the same perturbations.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<hr class="divider"/>
+<section id="limitations">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Limitations</span>
+      <h2 class="section-title">Honest Assessment</h2>
+      <p class="section-sub">Areas where CRAFT has room to grow and open questions for future work.</p>
+    </div>
+
+    <div class="lim-grid reveal">
+      <div class="lim-card latency">
+        <div class="lim-title">⏱ Multi-Stage Latency</div>
+        <p class="lim-desc">
+          The three-stage cascade introduces additional inference steps compared to a single-model retriever.
+          While each stage is lightweight, the sequential nature adds latency in real-time applications.
+          Pipeline parallelization could address this in future work.
+        </p>
+      </div>
+      <div class="lim-card scope">
+        <div class="lim-title">📋 Benchmark Scope</div>
+        <p class="lim-desc">
+          Evaluation is primarily conducted on the NQ-Tables dataset. Broader validation on other TQA
+          benchmarks (OTT-QA, HybridQA, etc.) would better establish generalizability across diverse
+          table formats and domains.
+        </p>
+      </div>
+    </div>
+
+    <details class="collapsible reveal">
+      <summary class="collapsible-head">📖 Future Directions</summary>
+      <div class="collapsible-body">
+        Future work could explore: (1) Replacing SPLADE with an even lighter sparse model for the first stage;
+        (2) Joint optimization of the pipeline without full fine-tuning (e.g., lightweight adapter tuning);
+        (3) Extension to multi-hop table QA where multiple tables are needed to answer a single question;
+        (4) Evaluation on non-English TQA datasets to assess multilingual robustness.
+      </div>
+    </details>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ── Citation ── -->
+<section id="citation">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Citation</span>
+      <h2 class="section-title">Cite This Work</h2>
+      <p class="section-sub">If CRAFT is useful for your research, please consider citing our paper.</p>
+    </div>
+
+    <div class="bibtex-wrap reveal">
+      <div class="bibtex-bar">
+        <span class="bibtex-filename">craft2025.bib</span>
+        <button class="copy-btn" id="copy-btn" onclick="copyCitation()">
+          <span id="copy-icon">📋</span>
+          <span id="copy-label">Copy BibTeX</span>
+        </button>
+      </div>
+      <pre class="bibtex" id="bibtex-block"><span class="bib-punc">@article{</span><span class="bib-key">craft2025</span><span class="bib-punc">,</span>
+  <span class="bib-field">title</span>   <span class="bib-punc">=</span> <span class="bib-val">{CRAFT: Training-Free Cascaded Retrieval for Tabular QA}</span><span class="bib-punc">,</span>
+  <span class="bib-field">author</span>  <span class="bib-punc">=</span> <span class="bib-val">{Singh, Adarsh and Bhandari, Kushal Raj and Gao, Jianxi
+           and Dan, Soham and Gupta, Vivek}</span><span class="bib-punc">,</span>
+  <span class="bib-field">year</span>    <span class="bib-punc">=</span> <span class="bib-val">{2025}</span><span class="bib-punc">,</span>
+  <span class="bib-field">eprint</span>  <span class="bib-punc">=</span> <span class="bib-val">{2505.14984}</span><span class="bib-punc">,</span>
+  <span class="bib-field">archivePrefix</span> <span class="bib-punc">=</span> <span class="bib-val">{arXiv}</span><span class="bib-punc">,</span>
+  <span class="bib-field">primaryClass</span>  <span class="bib-punc">=</span> <span class="bib-val">{cs.CL}</span>
+<span class="bib-punc">}</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">CRAFT</div>
+        <p class="footer-sub">Training-Free Cascaded Retrieval for Tabular QA.<br/>Arizona State University · RPI · Microsoft, 2025.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://arxiv.org/abs/2505.14984" class="footer-link" target="_blank">Paper</a>
+        <a href="#method" class="footer-link">Method</a>
+        <a href="mailto:asing725@asu.edu" class="footer-link">Contact</a>
+        <a href="#hero" class="footer-link">Back to Top</a>
+      </div>
+    <hr class="footer-divider"/>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 CRAFT Authors. All rights reserved.</span>
+      <span class="footer-ack">Supported by Arizona State University, RPI, and Microsoft Research.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ── JS ── -->
+<script>
+/* ── Scroll reveal ── */
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      e.target.style.transitionDelay = (Array.from(reveals).indexOf(e.target) % 4) * .08 + 's';
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: .08 });
+reveals.forEach(r => io.observe(r));
+
+/* ── Bar chart animation ── */
+const barIO = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.bar-fill').forEach((b, i) => {
+        setTimeout(() => b.classList.add('animated'), i * 100);
+      });
+      barIO.unobserve(e.target);
+    }
+  });
+}, { threshold: .1 });
+document.querySelectorAll('.bar-chart-wrap, .e2e-card').forEach(el => barIO.observe(el));
+
+/* ── Copy citation ── */
+function copyCitation() {
+  const raw = `@article{craft2025,
+  title   = {CRAFT: Training-Free Cascaded Retrieval for Tabular QA},
+  author  = {Singh, Adarsh and Bhandari, Kushal Raj and Gao, Jianxi and Dan, Soham and Gupta, Vivek},
+  year    = {2025},
+  eprint  = {2505.14984},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}`;
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.getElementById('copy-btn');
+    const lbl = document.getElementById('copy-label');
+    const ico = document.getElementById('copy-icon');
+    btn.classList.add('copied');
+    ico.textContent = '✅';
+    lbl.textContent = 'Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      ico.textContent = '📋';
+      lbl.textContent = 'Copy BibTeX';
+    }, 2500);
+  });
+}
+
+</script>
+</body>
+</html>
